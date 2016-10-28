@@ -1,14 +1,13 @@
 import re
 
-def sub_markup(text, input_leader, output_leader, input_trailer=None, output_trailer=None):
+
+def sub_markup(text, input_leader, output_leader,
+               input_trailer=None, output_trailer=None):
 
     if input_trailer is None:
         input_trailer = input_leader
     if output_trailer is None:
         output_trailer = output_leader
-
-    # within the following pattern, (?<!\w) is a ne (?!\w) is a negative look-ahead assertion that asserts
-    # the same about the next character.
 
     matcher = (
         r'(?<!\w)'            # negative look-behind assertion: checks that the
@@ -85,9 +84,10 @@ def to_markdown(text):
 if __name__ == '__main__':
     def expect_eq(input, expected_output):
         actual = to_markdown(input)
-        assert actual == expected_output, "Expected '%r' to convert to '%r' but gave '%r'" % (
-            input, expected_output, actual
-        )
+        assert actual == expected_output, \
+            "Expected '%r' to convert to '%r' but gave '%r'" % (
+                input, expected_output, actual
+            )
 
     expect_eq("*bold*", "**bold**")
     expect_eq("-strike- me -down-", "~~strike~~ me ~~down~~")

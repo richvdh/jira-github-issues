@@ -2,12 +2,13 @@
 #
 # usage: import-github-issues.py <user>/<project>
 #
-# imports all the issues to github, and writes a yaml file mapping from jira key to github issue.
+# imports all the issues to github, and writes a yaml file mapping from jira
+# key to github issue.
 #
 # uses the github import API
 # (https://gist.github.com/jonmagic/5282384165e0f86ef105), which allows us to
-# add issues and comments in one pass, and also avoids sending notifications to everyone who gets mentioned.
-
+# add issues and comments in one pass, and also avoids sending notifications to
+# everyone who gets mentioned.
 
 import argparse
 import logging
@@ -19,6 +20,8 @@ import yaml
 
 import requests
 
+import common
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
 
@@ -29,10 +32,12 @@ parser.add_argument(
 parser.add_argument('--debug', '-d', action='store_true')
 parser.add_argument(
     '--limit', type=int,
-    help='Maximum number of new issues to import. '+
-    'Set to zero to just check the states of already-imported issues'
+    help=('Maximum number of new issues to import. '
+          'Set to zero to just check the states of already-imported issues')
 )
-parser.add_argument('--issue', action='append', help='Single jira issue to import')
+parser.add_argument(
+    '--issue', action='append', help='Single jira issue to import'
+)
 parser.add_argument(
     '--data-dir', default='data',
     help='destination directory for exported issues. (default: %(default)s)'
@@ -64,12 +69,13 @@ status = shelve.open(statusfile)
 
 issues = args.issue
 if issues is None:
-    issues = (
+    issues = [
         fname.replace('.yaml', '')
-        for fname in sorted(os.listdir(args.data_dir))
+        for fname in os.listdir(args.data_dir)
         if re.match('[A-Z]+-[0-9]+\.yaml', fname)
-    )
+    ]
 
+    issues.sort(common.sort_jira_key)
 
 #
 # STEP 1: kick off import processes for any issues which haven't yet been
@@ -136,7 +142,9 @@ for issueKey in issues:
         json=data
     )
     if resp.status_code >= 400:
-        logger.error("Error from github: %i: %s", resp.status_code, resp.json())
+        logger.error(
+            "Error from github: %i: %s", resp.status_code, resp.json()
+        )
     resp.raise_for_status()
     issueStatus.update(resp.json())
     status[issueKey] = issueStatus
@@ -155,7 +163,8 @@ if os.path.exists(mapping_file):
         issue_mapping = yaml.load(f)
 
 #
-# STEP 2: check the import progress for each issue in the database, and write a mapping file
+# STEP 2: check the import progress for each issue in the database, and write a
+# mapping file
 #
 while has_pending:
     has_pending = False
@@ -175,7 +184,7 @@ while has_pending:
         stat = issueStatus['status']
         if stat == 'imported':
             url = issueStatus['issue_url']
-            p = url.replace('https://api.github.com/repos/','')
+            p = url.replace('https://api.github.com/repos/', '')
             link = 'https://github.com/' + p
             logger.info('imported: %s', link)
             issue_mapping[issue_jira_key] = p

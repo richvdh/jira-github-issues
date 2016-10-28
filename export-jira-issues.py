@@ -6,14 +6,12 @@
 
 import argparse
 import datetime
-import json
 import logging
 import multiprocessing
 import os.path
-import requests
-import threading
 import yaml
 
+import common
 from jira_to_markdown import to_markdown
 
 logging.basicConfig(level=logging.INFO)
@@ -35,15 +33,6 @@ if args.debug:
 with open("config.yaml") as conf:
     config = yaml.load(conf)
 
-localdata = threading.local()
-def get_jira_session():
-    jira_session = getattr(localdata, 'jira_session', None)
-    if jira_session is None:
-        jira_session = requests.Session()
-        if 'jira_password' in config:
-            jira_session.auth=(config['jira_user'], config['jira_password'])
-        localdata.jira_session = jira_session
-    return jira_session
 
 def map_user(user, fallback_to_display_name=True):
     """Map a jira user object to a github @user
@@ -68,8 +57,9 @@ def map_time(time):
 
     Basically this just drops the millisecond component.
     """
-    d = datetime.datetime.strptime(time,'%Y-%m-%dT%H:%M:%S.000%z')
+    d = datetime.datetime.strptime(time, '%Y-%m-%dT%H:%M:%S.000%z')
     return d.isoformat()
+
 
 def export_issue(issue):
     issue_key = issue['key']
@@ -113,7 +103,7 @@ def export_issue(issue):
             direction = 'outward'
             other = l['outwardIssue']
         else:
-            raise Exception('link ' + l['self'] + ' neither inward nor outward')
+            raise Exception('link neither inward nor outward: %r' % l)
         links.append({
             'direction': direction,
             'other': other['key'],
@@ -121,7 +111,7 @@ def export_issue(issue):
         })
 
     # get external links
-    resp = get_jira_session().get(
+    resp = common.get_jira_session(config).get(
         config['jira_url'] + '/rest/api/2/issue/' + issue_key + '/remotelink'
     )
     resp.raise_for_status()
@@ -132,7 +122,7 @@ def export_issue(issue):
         remotelinks[o['title']] = o['url']
 
     # get watchers
-    resp = get_jira_session().get(fields['watches']['self'])
+    resp = common.get_jira_session(config).get(fields['watches']['self'])
     resp.raise_for_status()
     r = resp.json()
     watchers = []
@@ -170,7 +160,7 @@ total = None
 asyncresults = []
 
 while total is None or issue_index < total:
-    result = get_jira_session().get(
+    result = common.get_jira_session(config).get(
         config['jira_url'] + '/rest/api/2/search',
         params={
             'jql': jql,

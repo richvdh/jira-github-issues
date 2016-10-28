@@ -23,7 +23,9 @@ logger = logging.getLogger()
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--debug', '-d', action='store_true')
-parser.add_argument('--issue', action='append', help='Single jira issue to update')
+parser.add_argument(
+    '--issue', action='append', help='Single jira issue to update'
+)
 parser.add_argument(
     '--data-dir', default='data',
     help='destination directory for exported issues. (default: %(default)s)'
@@ -40,19 +42,11 @@ mapping_file = os.path.join(args.data_dir, 'issue_mapping.yaml')
 with open(mapping_file) as f:
     issue_mapping = yaml.load(f)
 
-#github_session = github.Github(config['github_token'])
 github_session = requests.Session()
 github_session.headers.update({
     'User-Agent': 'Jira issue import',
     'Authorization': 'token ' + config['github_token'],
 })
-
-def map_jira_key(key):
-    """convert a jira key into either a github link, or a link back to jira"""
-    if key in issue_mapping:
-        return 'https://github.com/' + issue_mapping[key]
-    else:
-        return '[%s](https://matrix.org/jira/browse/%s)' % (key, key)
 
 # compile a big regexp which matches any jira key
 jira_key_regex = re.compile(
@@ -61,10 +55,20 @@ jira_key_regex = re.compile(
     r')-\d+(?!\w)'
 )
 
-def replace_jira_keys(text):
-    """ look for jira keys in text and replace with links
 
-    returns (new: string, updated: boolean) where updated is True if a change was made
+def map_jira_key(key):
+    """convert a jira key into either a github link, or a link back to jira"""
+    if key in issue_mapping:
+        return 'https://github.com/' + issue_mapping[key]
+    else:
+        return '[%s](https://matrix.org/jira/browse/%s)' % (key, key)
+
+
+def replace_jira_keys(text):
+    """look for jira keys in text and replace with links
+
+    returns (new: string, updated: boolean) where updated is True if a change
+    was made
     """
 
     idx = 0
@@ -76,7 +80,9 @@ def replace_jira_keys(text):
         s = match.start()
 
         # logger.debug("got match %r after %s", match, text[s-7:s])
-        # don't replace if the previous text is 'browse/', because that means it's already linkified.
+
+        # don't replace if the previous text is 'browse/', because that means
+        # it's already linkified.
         if s > 7 and text[s-7:s] == 'browse/':
             idx = match.end()
             continue
@@ -153,6 +159,6 @@ for issue_jira_key in issues:
         if updated:
             resp = github_session.patch(
                 comment['url'],
-                json={ 'body': newbody }
+                json={'body': newbody}
             )
             resp.raise_for_status()
