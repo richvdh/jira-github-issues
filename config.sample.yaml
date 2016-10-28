@@ -1,0 +1,35 @@
+jira_url: "http://example.com/jira"
+
+# jira authenticatio is optional, but is needed for add-jira-links.py,
+# and for successful export of watchers.
+jira_user: "user"
+jira_password: "password"
+
+# a github auth token for the user who will create the new issues. Needs 'repo'
+# permissions.
+github_token: t0k3n
+
+# a map from Jira user id to github user id. Anyone in this list will get
+# mentioned for each bug they are watching in jira (thus subscribing them to
+# the github issue), and their github userid will be used where we record the
+# author of a comment. Otherwise, we'll use the displayname from Jira.
+
+user_map:
+    # JiraUser: octocat
+
+# a map from priority name to a label to assign to github issue. Any unknown
+# priorities are ignored.
+priority_to_label_map:
+    P1: p1
+    P2: p2
+    # don't bother mapping p3, since it just means default.
+    P4: p4
+    P5: p5
+
+# when we go through github comments, we will look for references to jira keys
+# which look like they belong to these projects, and change them into links to
+# either the newly imported issues, or links to the jira bugs.
+
+jira_project_keys:
+    - PROJ
+    - OTHERPROJ
