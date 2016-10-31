@@ -75,7 +75,7 @@ if issues is None:
         if re.match('[A-Z]+-[0-9]+\.yaml', fname)
     ]
 
-    issues.sort(common.sort_jira_key)
+    issues.sort(key=common.sort_jira_key)
 
 #
 # STEP 1: kick off import processes for any issues which haven't yet been
