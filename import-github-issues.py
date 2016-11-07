@@ -132,9 +132,12 @@ for issueKey in issues:
     if type_label is not None:
         labels.append(type_label)
 
+
+    title = j['title'] + ' (' + issueKey + ')'
+
     data = {
         'issue': {
-            'title': j['title'],
+            'title': title,
             'body': body,
             'created_at': j['created_at'],
             'labels': labels,

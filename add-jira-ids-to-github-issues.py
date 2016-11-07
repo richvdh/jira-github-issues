@@ -54,15 +54,14 @@ if issues is None:
 
 for issue_jira_key in issues:
     logger.info("Updating %s", issue_jira_key)
+    fname = os.path.join(args.data_dir, issue_jira_key+'.yaml')
+
+    j = yaml.load(open(fname))
 
     issue_url = 'https://api.github.com/repos/' + issue_mapping[issue_jira_key]
 
-    # get the current issue title
-    resp = github_session.get(issue_url)
-    resp.raise_for_status()
-    r = resp.json()
     updated_data = {
-        'title': r['title'] + ' (' + issue_jira_key + ')'
+        'title': j['title'] + ' (' + issue_jira_key + ')'
     }
 
     resp = github_session.patch(

@@ -130,7 +130,10 @@ for issue_jira_key in issues:
     resp.raise_for_status()
     r = resp.json()
     updated_data = {}
-    for field in ('title', 'body'):
+
+    # *don't* do this to title: links don't work in the title anyway, and we
+    # deliberately want the jira id there.
+    for field in ('body', ):
         (new, updated) = replace_jira_keys(r[field])
         if updated:
             updated_data[field] = new
