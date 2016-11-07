@@ -136,6 +136,7 @@ def export_issue(issue):
         'body': body,
         'created_at': map_time(fields['created']),
         'priority': fields['priority']['name'],
+        'type': fields['issuetype']['name'],
         'comments': comments,
         'attachments': attachments,
         'remotelinks': remotelinks,

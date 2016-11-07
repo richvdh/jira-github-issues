@@ -128,6 +128,10 @@ for issueKey in issues:
     if priority_label is not None:
         labels.append(priority_label)
 
+    type_label = config['type_to_label_map'].get(j['type'])
+    if type_label is not None:
+        labels.append(type_label)
+
     data = {
         'issue': {
             'title': j['title'],

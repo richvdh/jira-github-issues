@@ -26,6 +26,13 @@ priority_to_label_map:
     P4: p4
     P5: p5
 
+# a map from issue type name to a label to assign to github issue. Any unknown
+# types are ignored.
+type_to_label_map:
+    New Feature: feature
+    Bug: bug
+    Improvement: improvement
+
 # when we go through github comments, we will look for references to jira keys
 # which look like they belong to these projects, and change them into links to
 # either the newly imported issues, or links to the jira bugs.
