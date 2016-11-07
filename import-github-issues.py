@@ -124,13 +124,15 @@ for issueKey in issues:
         })
 
     labels = j['labels']
-    priority_label = config['priority_to_label_map'].get(j['priority'])
-    if priority_label is not None:
-        labels.append(priority_label)
 
-    type_label = config['type_to_label_map'].get(j['type'])
-    if type_label is not None:
-        labels.append(type_label)
+    if j['status'] != 'Pending Triage':
+        priority_label = config['priority_to_label_map'].get(j['priority'])
+        if priority_label is not None:
+            labels.append(priority_label)
+
+        type_label = config['type_to_label_map'].get(j['type'])
+        if type_label is not None:
+            labels.append(type_label)
 
 
     title = j['title'] + ' (' + issueKey + ')'
