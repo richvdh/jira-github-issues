@@ -12,7 +12,6 @@
 
 import argparse
 import logging
-import os
 import os.path
 import re
 import shelve
@@ -41,6 +40,11 @@ parser.add_argument(
 parser.add_argument(
     '--data-dir', default='data',
     help='destination directory for exported issues. (default: %(default)s)'
+)
+parser.add_argument(
+    '--no-old-issue-number', default=False, action='store_true',
+    help="Disable the inclusion of the old issue number in the new issue's "
+         "title",
 )
 args = parser.parse_args()
 
@@ -72,7 +76,7 @@ if issues is None:
     issues = [
         fname.replace('.yaml', '')
         for fname in os.listdir(args.data_dir)
-        if re.match('[A-Z]+-[0-9]+\.yaml', fname)
+        if re.match('.*[0-9]+\.yaml', fname)
     ]
 
     issues.sort(key=common.sort_jira_key)
@@ -134,8 +138,10 @@ for issueKey in issues:
         if type_label is not None:
             labels.append(type_label)
 
+    title = j['title']
 
-    title = j['title'] + ' (' + issueKey + ')'
+    if not args.no_old_issue_number:
+        title += ' (' + issueKey + ')'
 
     data = {
         'issue': {
@@ -145,6 +151,8 @@ for issueKey in issues:
             'labels': labels,
         }, 'comments': comments,
     }
+
+    logger.debug("Importing: %s", data)
 
     resp = github_session.post(
         'https://api.github.com/repos/%s/import/issues' % (args.proj),

@@ -20,4 +20,14 @@ generated a yaml file.
 github issue.
 
 
+Alternative usage for migrating between github projects
+=======================================================
 
+(This isn't particularly well polished. In particular we should include the
+source project in the issue identifier in the datafile name).
+
+1. use `export-github-issues.py` to export yaml files for each source issue.
+
+2. `import-github-issues.py` to import the issues to the new project.
+
+3. `add oldissue-github-links.py` to add links to the original github issues.
